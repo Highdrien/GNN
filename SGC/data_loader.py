@@ -46,7 +46,6 @@ class DataGraph():
 
         y = torch.tensor(g.graph["y"][0])
         y = torch.nn.functional.one_hot(y, num_classes=self.num_classes)
-        y = y.to(torch.float32)
 
         return nodes_features, edge_index, y
     

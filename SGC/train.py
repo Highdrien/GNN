@@ -1,51 +1,51 @@
 import torch
+import numpy as np
 from model import SGConvModel
 from data_loader import DataGraph
-from torch.nn import CrossEntropyLoss
 
 from icecream import ic
 
-criterion = CrossEntropyLoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
-
 def train():
     train_generator = DataGraph(dataset_name='ENZYMES', mode='train')
+    val_generator = DataGraph(dataset_name="ENZYMES", mode='val')
 
     model = SGConvModel(num_features=train_generator.num_features,
                 num_classes=train_generator.num_classes,
-                hidden_dim=64)
+                hidden_layer=[64, 32], dropout=0.1)
 
     print(model)
 
-    train_acc = evaluate(model, train_loader)
-    val_acc = evaluate(model, val_loader)
-    print(f'Epoch {epoch + 1}, Train Accuracy: {train_acc:.4f}, Val Accuracy: {val_acc:.4f}')
-    
-    f, e = train_generator.__getitem__(0)
-    y = model.forward(f, e)
-    ic(y.shape)
+    criterion = torch.nn.CrossEntropyLoss(reduction="mean")
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.1)
 
-def train(model, loader):
-    model.train()
-    for data in loader:
-        optimizer.zero_grad()
-        out = model(data)
-        loss = criterion(out, data.y)
-        loss.backward()
-        optimizer.step()
+    for epoch in range(1, 11):
+        print(f"{epoch = }")
 
-def evaluate(model, loader):
-    model.eval()
-    correct = 0
-    total = 0
-    with torch.no_grad():
-        for data in loader:
-            out = model(data)
-            _, predicted = torch.max(out, 1)
-            total += data.y.size(0)
-            correct += (predicted == data.y).sum().item()
-    return correct / total
+        train_loss = []
+        for i in range(len(train_generator)):
+            nodes_features, edge_index, y_true = train_generator.__getitem__(i)
+            y_pred = model.forward(nodes_features, edge_index).unsqueeze(0)
+            y_true = y_true.unsqueeze(0)
 
+            loss = criterion(y_pred, y_true)
+            loss.backward()
+            train_loss.append(loss.item())
+            optimizer.step()
+            optimizer.zero_grad()
+        
+        print('train loss:', np.mean(train_loss))
 
-for epoch in range(100):
+        val_loss = []
+        with torch.no_grad():
+            for i in range(len(val_generator)):
+                nodes_features, edge_index, y_true = val_generator.__getitem__(i)
+                y_pred = model.forward(nodes_features, edge_index).unsqueeze(0)
+                y_true = y_true.unsqueeze(0)
+
+                loss = criterion(y_pred, y_true)
+                val_loss.append(loss.item())
+        
+        print('val loss:', np.mean(val_loss))
+
+if __name__ == "__main__":
     train()
