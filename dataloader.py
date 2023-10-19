@@ -1,5 +1,6 @@
 from torch_geometric.datasets import TUDataset
 import torch_geometric.utils as tf_utils
+from torch_geometric.data import Data
 import networkx as nx
 import torch
 
@@ -47,7 +48,9 @@ class DataGraph():
         y = torch.tensor(g.graph["y"][0])
         y = torch.nn.functional.one_hot(y, num_classes=self.num_classes)
 
-        return nodes_features, edge_index, y
+        data = Data(x=nodes_features, edge_index=edge_index)
+
+        return data, y
     
 
     def split_data(self):
@@ -61,6 +64,7 @@ class DataGraph():
         if self.mode == 'test':
             self.data = self.data[split2:]
     
+
     def convert_to_networkx(self, dataset):
         """
         Conversion des données PyTorch en graphes NetworkX
