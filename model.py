@@ -4,7 +4,7 @@ import torch.nn.functional as F
 from torch_geometric.data import Data
 from torch_geometric.nn import GCNConv, GINConv, SGConv
 
-from typing import List, Dict
+from typing import List, Dict, Union
 
 
 ####################
@@ -112,31 +112,29 @@ class SGCModel(nn.Module):
 #     GetModel        
 ####################
 
-def getModel(MODELS: Dict[str, dict],
-             model_name: str,
+def getModel(model_name: str,
+             model_info: Dict[str, Union[int, List[int]]],
              num_features: int,
              num_classes: int
              ) -> nn.Module:
     
-    assert model_name in MODELS.keys(), f"Error, model_name must be in {list(MODELS.keys())} but is {model_name}"
-    
     if model_name == 'GCN':
         model = GCNModel(num_features=num_features,
                          num_classes=num_classes,
-                         hidden_layer=MODELS['GCN']['hidden_layer'],
-                         dropout=MODELS['GCN']['dropout'])
+                         hidden_layer=model_info['hidden_layer'],
+                         dropout=model_info['dropout'])
         
     elif model_name == 'SGC':
         model = SGCModel(num_features=num_features,
                          num_classes=num_classes,
-                         hidden_layer=MODELS['SGC']['hidden_layer'],
-                         dropout=MODELS['SGC']['dropout'])
+                         hidden_layer=model_info['hidden_layer'],
+                         dropout=model_info['dropout'])
         
     elif model_name == 'GIN':
         my_nn_module = NNModule(in_channels=num_features, 
                                 out_channels=num_classes,
-                                hidden_layer=MODELS['GIN']['hidden_layer'])
+                                hidden_layer=model_info['hidden_layer'])
         model = GINModel(my_nn_module, 
-                         epsilon=MODELS['GIN']['epsilon'])
+                         epsilon=model_info['epsilon'])
     
     return model
