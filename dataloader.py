@@ -1,10 +1,14 @@
-from torch_geometric.datasets import TUDataset
-import torch_geometric.utils as tf_utils
-from torch_geometric.data import Data
 import networkx as nx
-import torch
-
 from icecream import ic
+from typing import List, Tuple
+
+import torch
+from torch.utils.data import Dataset
+
+from torch_geometric.data import Data
+import torch_geometric.utils as tf_utils
+from torch_geometric.datasets import TUDataset
+import networkx as nx
 
 
 DATASET = {'MUTAG': {'graphs': 188, 'features': 7, 'classes': 2},
@@ -12,10 +16,12 @@ DATASET = {'MUTAG': {'graphs': 188, 'features': 7, 'classes': 2},
            'PROTEINS': {'graphs': 1113, 'features': 3, 'classes': 2}}
 
 
-class DataGraph():
+class DataGraph(Dataset):
     def __init__(self, 
-                 dataset_name: int, 
-                 mode: int) -> None:
+                 dataset_name: str, 
+                 mode: str
+                 ) -> None:
+        """ charge les données du dataset """
         
         ic(dataset_name)
         assert dataset_name in DATASET.keys(), f"datasetname must be {list(DATASET.keys())} but is {dataset_name} "
@@ -31,9 +37,14 @@ class DataGraph():
 
     
     def __len__(self) -> int:
+        """ renvoie le nombre de données """
         return len(self.data)
 
-    def __getitem__(self, index: int):
+    def __getitem__(self, 
+                    index: int
+                    ) -> Tuple[Data, torch.Tensor]:
+        """ renvoie le graph[index] sous la forme Data(x=nodes_features, edge_index=edge_index)
+            et le label y en one hot encoding """
         g = self.data[index]
 
         # edge index
@@ -53,7 +64,7 @@ class DataGraph():
         return data, y
     
 
-    def split_data(self):
+    def split_data(self) -> None:
         n = len(self.data)
         split1 = int(0.6 * n)
         split2 = int(0.8 * n)
@@ -65,7 +76,9 @@ class DataGraph():
             self.data = self.data[split2:]
     
 
-    def convert_to_networkx(self, dataset):
+    def convert_to_networkx(self, 
+                            dataset: TUDataset
+                            ) -> List[nx.classes.graph.Graph]:
         """
         Conversion des données PyTorch en graphes NetworkX
         :param dataset: le jeu de données PyTorch geometric
@@ -84,9 +97,12 @@ class DataGraph():
 if __name__ == '__main__':
     generator = DataGraph(dataset_name='ENZYMES', mode='train')
     ic(len(generator))
-    nodes_features, edge_index, y = generator.__getitem__(3)
+    data, y = generator.__getitem__(3)
+    nodes_features = data.x
+    edge_index = data.edge_index
     ic(nodes_features.shape)
     ic(edge_index.shape)
     ic(y)
     ic(y.dtype)
     ic(y.shape)
+    ic(type(data))
