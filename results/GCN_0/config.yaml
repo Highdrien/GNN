@@ -1,0 +1,8 @@
+model_name: GCN
+dataset_name: ENZYMES
+learning_rate: 0.01
+
+# model info
+model_info:
+  hidden_layer: [16, 32]
+  dropout: 0.1
