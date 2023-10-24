@@ -135,6 +135,6 @@ def getModel(model_name: str,
                                 out_channels=num_classes,
                                 hidden_layer=model_info['hidden_layer'])
         model = GINModel(my_nn_module, 
-                         epsilon=model_info['epsilon'])
+                         epsilon=float(model_info['epsilon']))
     
     return model

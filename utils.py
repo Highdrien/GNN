@@ -20,9 +20,9 @@ def save_experiement(model_name: str,
         f.write(f"learning_rate: {learning_rate}\n")
         f.write('\n')
         f.write('# model info\n')
-        f.write('model:\n')
+        f.write('model_info:\n')
         for key, value in model_info.items():
-            f.write(f"\t{key}: {value}\n")
+            f.write(f"  {key}: {value}\n")
     f.close()
 
     return logging_path

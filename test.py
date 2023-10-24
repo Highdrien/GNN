@@ -56,5 +56,10 @@ def test(logging_path: str) -> None:
 
 
 if __name__ == '__main__':
-    path = os.path.join('results', 'GCN_0')
-    test(logging_path=path)
+    # test(logging_path=os.path.join('results', 'GIN_2'))
+
+    all_path = os.listdir('results')
+    for path in all_path:
+        path = os.path.join('results', path)
+        print(path)
+        test(logging_path=path)
