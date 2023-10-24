@@ -86,12 +86,12 @@ def train(model_name: str,
         learning['val']['loss'].append(np.mean(val_loss))
         learning['val']['acc'].append(np.mean(val_acc))
 
+        print(f"VAL   -> loss: {learning['val']['loss'][-1]: .2f} \tacc: {learning['val']['acc'][-1]: .2f}")
+
         # save weigth only if it's the best validation loss
         if learning['val']['loss'][-1] == min(learning['val']['loss']):
             print("save weigth")
             torch.save(model.state_dict(), os.path.join(logging_path, 'checkpoint.pt'))
-
-        print(f"VAL   -> loss: {learning['val']['loss'][-1]: .2f} \tacc: {learning['val']['acc'][-1]: .2f}")
     
     save_logs(logpath=logging_path, learning=learning)
 
@@ -99,6 +99,6 @@ def train(model_name: str,
 
 if __name__ == '__main__':
     # Comment lines
-    train(model_name='GCN', num_epochs=10, learning_rate=0.01)
-    # train(model_name='SGC', num_epochs=10, learning_rate=0.01)
-    train(model_name='GIN', num_epochs=10, learning_rate=0.01)
+    train(model_name='GCN', num_epochs=40, learning_rate=0.001)
+    train(model_name='SGC', num_epochs=40, learning_rate=0.001)
+    train(model_name='GIN', num_epochs=40, learning_rate=0.001)

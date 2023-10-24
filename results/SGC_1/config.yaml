@@ -1,8 +1,8 @@
-model_name: GCN
+model_name: SGC
 dataset_name: ENZYMES
 learning_rate: 0.001
 
 # model info
 model:
-	hidden_layer: [16, 32]
+	hidden_layer: [128, 64]
 	dropout: 0.1
