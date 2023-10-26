@@ -12,8 +12,8 @@ from model import getModel
 from utils import save_experiement, save_logs
 
 
-MODELS = {'GCN': {'hidden_layer': [16, 32], 'dropout': 0.1},
-          'SGC': {'hidden_layer': [128, 64], 'dropout': 0.1},
+MODELS = {'GCN': {'hidden_layer': [128, 64, 32, 16], 'dropout': 0.1},
+          'SGC': {'hidden_layer': [128, 64], 'dropout': 0.1, 'K': 4},
           'GIN': {'epsilon': 1e-5, 'hidden_layer': 64}}
 
 

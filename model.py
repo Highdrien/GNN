@@ -20,23 +20,33 @@ class GCNModel(nn.Module):
                  dropout: float
                  ) -> None:
         super(GCNModel, self).__init__()
-        self.conv1 = GCNConv(num_features, hidden_layer[0])
-        self.conv2 = GCNConv(hidden_layer[0], hidden_layer[1])
-        self.linear = nn.Linear(hidden_layer[1], num_classes)
-        self.dropout = nn.Dropout(dropout)
+        self.num_conv = len(hidden_layer)
+
+        self.conv = []
+        self.conv.append(GCNConv(num_features, hidden_layer[0]))
+        for i in range(1, self.num_conv):
+            self.conv.append(GCNConv(hidden_layer[i - 1], hidden_layer[i]))
+        
+        self.linear = nn.Linear(hidden_layer[-1], num_classes)
 
     def forward(self, 
                 data: Data
                 ) -> torch.Tensor:
-        node_features, edge_indices = data.x, data.edge_index
-        x = self.conv1(node_features, edge_indices)
-        x = F.relu(x)
-        x = self.dropout(x)
-        x = self.conv2(x, edge_indices)
-        x = F.relu(x)
-        x = self.dropout(x)
+        x, edge_indices = data.x, data.edge_index
+
+        for i in range(self.num_conv):
+            x = self.conv[i](x, edge_indices)
+            x = F.relu(x)
+        
         x = self.linear(x)
         return x
+    
+    def __str__(self):
+        string = 'model GCN:\n'
+        for i in range(self.num_conv):
+            string += f'\t{str(self.conv[i])}\n'
+        string += f'\t{self.linear}'
+        return string
     
 
 
@@ -84,24 +94,28 @@ class SGCModel(nn.Module):
     def __init__(self, 
                  num_features: int, 
                  num_classes: int, 
-                 hidden_layer: List[int], 
+                 hidden_layer: List[int],
+                 K: int, 
                  dropout: float):
         super(SGCModel, self).__init__()
-        self.conv1 = SGConv(num_features, hidden_layer[0])
-        self.conv2 = SGConv(hidden_layer[0], hidden_layer[1])
-        self.linear = nn.Linear(hidden_layer[1], num_classes)
+        self.num_conv = len(hidden_layer)
+        self.conv1 = SGConv(num_features, hidden_layer[0], K=K)
+        if self.num_conv == 2:
+            self.conv2 = SGConv(hidden_layer[0], hidden_layer[1], K=K)
+        self.linear = nn.Linear(hidden_layer[-1], num_classes)
         self.dropout = nn.Dropout(dropout)
+        self.relu = nn.ReLU()
 
     def forward(self, 
                 data: Data
                 ) -> torch.Tensor:
         node_features, edge_indices = data.x, data.edge_index
         x = self.conv1(node_features, edge_indices)
-        x = F.relu(x)
         x = self.dropout(x)
-        x = self.conv2(x, edge_indices)
-        x = F.relu(x)
-        x = self.dropout(x)
+        if self.num_conv == 2:
+            x = self.relu(x)
+            x = self.conv2(x, edge_indices)
+            x = self.dropout(x)
         x = self.linear(x)
 
         return x
@@ -128,7 +142,8 @@ def getModel(model_name: str,
         model = SGCModel(num_features=num_features,
                          num_classes=num_classes,
                          hidden_layer=model_info['hidden_layer'],
-                         dropout=model_info['dropout'])
+                         dropout=model_info['dropout'],
+                         K=model_info['K'])
         
     elif model_name == 'GIN':
         my_nn_module = NNModule(in_channels=num_features, 
