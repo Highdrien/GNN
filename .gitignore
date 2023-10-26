@@ -1,4 +1,15 @@
 __pycache__
 test.ipynb
 data
-repport
+
+# repport
+Graph_neural_network.aux 
+Graph_neural_network.bbl 
+Graph_neural_network.bcf 
+Graph_neural_network.blg 
+Graph_neural_network.fdb_latexmk 
+Graph_neural_network.fls 
+Graph_neural_network.log 
+Graph_neural_network.out 
+Graph_neural_network.run.xml
+Graph_neural_network.synctex.gz 
