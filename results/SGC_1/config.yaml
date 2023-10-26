@@ -6,3 +6,4 @@ learning_rate: 0.001
 model_info:
   hidden_layer: [128, 64]
   dropout: 0.1
+  K: 4
