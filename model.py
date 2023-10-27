@@ -54,12 +54,12 @@ class GCNModel(nn.Module):
 #        GIN        
 ####################
 
-class NNModule(nn.Module):
+class MLP(nn.Module):
     def __init__(self, 
                  in_channels: int, 
                  out_channels: int, 
                  hidden_layer: int):
-        super(NNModule, self).__init__()
+        super(MLP, self).__init__()
         self.fc1 = nn.Linear(in_channels, hidden_layer)
         self.fc2 = nn.Linear(hidden_layer, out_channels)
         self.relu = nn.ReLU()
@@ -73,17 +73,43 @@ class NNModule(nn.Module):
 
 class GINModel(nn.Module):
     def __init__(self, 
-                 my_nn_module: nn.Module, 
+                 num_features: int, 
+                 num_classes: int,
+                 hidden_layers: List[int],
                  epsilon: float):
         super(GINModel, self).__init__()
-        self.conv1 = GINConv(my_nn_module, eps=epsilon)
+
+        self.n = len(hidden_layers)
+        assert self.n in [1, 3], f"len hidden layers must be 1 ou 3, not {self.n}"
+
+        if self.n == 1:
+            self.conv = GINConv(MLP(in_channels=num_features,
+                                    out_channels=num_classes,
+                                    hidden_layer=hidden_layers[0]),
+                                    eps=epsilon)
+        else:
+            self.conv1 = GINConv(MLP(in_channels=num_features,
+                                     out_channels=hidden_layers[1],
+                                     hidden_layer=hidden_layers[0]),
+                                     eps=epsilon)
+            self.conv2 = GINConv(MLP(in_channels=hidden_layers[1],
+                                     out_channels=num_classes,
+                                     hidden_layer=hidden_layers[2]),
+                                     eps=epsilon)
+            self.relu = nn.ReLU()
 
     def forward(self, 
                 data: Data
                 ) -> torch.Tensor:
         x, edge_index = data.x, data.edge_index
-        x = self.conv1(x, edge_index)
+        if self.n == 1:
+            x = self.conv(x, edge_index)
+        else:
+            x = self.conv1(x, edge_index)
+            x = self.relu(x)
+            x = self.conv2(x, edge_index)
         return x
+
     
     
 ####################
@@ -146,10 +172,9 @@ def getModel(model_name: str,
                          K=model_info['K'])
         
     elif model_name == 'GIN':
-        my_nn_module = NNModule(in_channels=num_features, 
-                                out_channels=num_classes,
-                                hidden_layer=model_info['hidden_layer'])
-        model = GINModel(my_nn_module, 
+        model = GINModel(num_features=num_features,
+                         num_classes=num_classes,
+                         hidden_layers=model_info['hidden_layer'], 
                          epsilon=float(model_info['epsilon']))
     
     return model

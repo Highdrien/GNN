@@ -5,4 +5,4 @@ learning_rate: 0.001
 # model info
 model_info:
   epsilon: 1e-05
-  hidden_layer: [64]
+  hidden_layer: [64, 32, 16]

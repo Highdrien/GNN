@@ -14,7 +14,7 @@ from utils import save_experiement, save_logs
 
 MODELS = {'GCN': {'hidden_layer': [128, 64, 32, 16], 'dropout': 0.1},
           'SGC': {'hidden_layer': [128, 64], 'dropout': 0.1, 'K': 4},
-          'GIN': {'epsilon': 1e-5, 'hidden_layer': 64}}
+          'GIN': {'epsilon': 1e-5, 'hidden_layer': [64, 32, 16]}}
 
 
 def train(model_name: str,
@@ -99,6 +99,6 @@ def train(model_name: str,
 
 if __name__ == '__main__':
     # Comment lines
-    train(model_name='GCN', num_epochs=40, learning_rate=0.001)
-    train(model_name='SGC', num_epochs=40, learning_rate=0.001)
+    # train(model_name='GCN', num_epochs=40, learning_rate=0.001)
+    # train(model_name='SGC', num_epochs=40, learning_rate=0.001)
     train(model_name='GIN', num_epochs=40, learning_rate=0.001)
